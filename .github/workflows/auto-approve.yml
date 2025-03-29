@@ -1,0 +1,38 @@
+name: Auto approve
+on: pull_request_target
+
+
+jobs:
+  lablelling:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: write
+    steps:
+      - id: autolabel
+        name: autolabel
+        uses: actions/labeler@v5
+  approval:
+    needs: lablelling
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: write
+    if: contains(github.event.pull_request.labels.*.name, 'automerge')
+    steps:
+      - uses: hmarr/auto-approve-action@v4
+        with: 
+          review-message: "Auto approved for merging during UWB-CSS-BOOTUP"
+  merging:
+    needs: approval
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: write
+    steps:
+      - id: automerge
+        name: automerge
+        uses: "pascalgn/automerge-action@v0.16.4"
+        env:
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          
